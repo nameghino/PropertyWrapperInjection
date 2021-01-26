@@ -36,7 +36,7 @@ public class ComponentContainer {
     private var container: [Key: ComponentEntry] = [:]
     private var applicationScope: [Key: Any] = [:]
 
-    // maybe implement stacking?
+    // maybe implement stacking? - see experimental/stacking
 
     public enum Scope {
         case transient, application
