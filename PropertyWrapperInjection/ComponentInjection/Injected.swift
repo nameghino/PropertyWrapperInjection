@@ -9,16 +9,14 @@ import Foundation
 
 @propertyWrapper struct Injected<Component> {
     let label: String?
-    let container: ComponentContainer
 
-    init(label: String? = nil, container: ComponentContainer = .default) {
+    init(label: String? = nil) {
         self.label = label
-        self.container = container
     }
 
     var wrappedValue: Component {
         get {
-            try! self.container.resolve(type: Component.self, label: label)
+            try! ComponentContainer.default.resolve(type: Component.self, label: label)
         }
     }
 }
