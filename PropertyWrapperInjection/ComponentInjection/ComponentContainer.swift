@@ -9,7 +9,40 @@ import Foundation
 
 public class ComponentContainer {
 
-    public static let `default` = ComponentContainer()
+    private static var stack: [ComponentContainer] = []
+    public static var current: ComponentContainer {
+        guard let last = self.stack.last else {
+            fatalError("no containers are configured")
+        }
+
+        return last
+    }
+
+    public static func set(root: ComponentContainer, forceDelete: Bool = false) {
+        guard self.stack.isEmpty || forceDelete == true else {
+            fatalError("cannot set root, child components are configured. set forceDelete if you really need this")
+        }
+
+        self.stack = [root]
+    }
+
+    public static func push(container: ComponentContainer) {
+        precondition(!stack.isEmpty)
+        stack.append(container)
+    }
+
+    @discardableResult
+    public static func pop() -> ComponentContainer {
+        guard
+            self.stack.count > 1,
+            let popped = stack.popLast()
+
+        else {
+            fatalError("cannot pop root container")
+        }
+
+        return popped
+    }
 
     public enum Error: Swift.Error {
         case unknownComponent(ComponentContainer.Key)

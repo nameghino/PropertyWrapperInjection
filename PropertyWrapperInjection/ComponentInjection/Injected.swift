@@ -16,7 +16,7 @@ import Foundation
 
     var wrappedValue: Component {
         get {
-            try! ComponentContainer.default.resolve(type: Component.self, label: label)
+            try! ComponentContainer.current.resolve(type: Component.self, label: label)
         }
     }
 }

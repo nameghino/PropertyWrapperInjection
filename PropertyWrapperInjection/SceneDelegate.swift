@@ -7,6 +7,24 @@
 
 import UIKit
 
+class TimeViewModel {
+    @Injected<TimeProviderProtocol>
+    var timeProvider
+
+    @Injected<TimeProviderProtocol>(label: "my birthday")
+    var nico
+
+    var labelText: String = "* not yet set *"
+
+    func update(nico: Bool = false) {
+        if nico {
+            self.labelText = "\(self.nico.now)"
+        } else {
+            self.labelText = "\(self.timeProvider.now)"
+        }
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -27,7 +45,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         viewModel.update(nico: true)
         print(viewModel.labelText)
         viewModel.update()
-        print(viewModel.labelText)    }
+        print(viewModel.labelText)
+    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
@@ -58,7 +77,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func setupComponents() {
-        let container = ComponentContainer.default
+        let container = ComponentContainer()
         container.register(type: NetworkingProtocol.self) { _ in
             return URLSession.shared
         }
@@ -70,6 +89,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let date = Calendar.autoupdatingCurrent.date(from: components)!
             return MockTimeProvider(with: date)
         }
+
+        ComponentContainer.set(root: container)
     }
 
 }
