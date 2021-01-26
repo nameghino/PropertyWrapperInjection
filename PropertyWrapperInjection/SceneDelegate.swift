@@ -20,11 +20,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         setupComponents()
 
-        let vm = try! TimeViewModel(container: ComponentContainer.default)
-        print(vm.labelText)
-        vm.update()
-        print(vm.labelText)
-    }
+        let viewModel = TimeViewModel()
+        print(viewModel.labelText)
+        viewModel.update()
+        print(viewModel.labelText)
+        viewModel.update(nico: true)
+        print(viewModel.labelText)
+        viewModel.update()
+        print(viewModel.labelText)    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
@@ -61,6 +64,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
 
         container.register(type: TimeProviderProtocol.self) { _ in Realtime() }
+        container.register(type: TimeProviderProtocol.self, label: "my birthday") { _ in
+            let components = DateComponents(calendar: .autoupdatingCurrent,
+                                            timeZone: TimeZone(secondsFromGMT: -3 * 3600), year: 1986, month: 4, day: 23, hour: 9, minute: 50)
+            let date = Calendar.autoupdatingCurrent.date(from: components)!
+            return MockTimeProvider(with: date)
+        }
     }
 
 }

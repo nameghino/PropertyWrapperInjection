@@ -8,25 +8,27 @@
 import UIKit
 
 class TimeViewModel {
-    private weak var timeProvider: TimeProviderProtocol!
+    @Injected<TimeProviderProtocol>
+    var timeProvider
 
-    init(container: ComponentContainer) throws {
-        self.timeProvider = try container.resolve(type: TimeProviderProtocol.self)
-    }
+    @Injected<TimeProviderProtocol>(label: "my birthday")
+    var nico
 
     var labelText: String = "* not yet set *"
 
-    func update() {
-        self.labelText = "\(timeProvider.now)"
+    func update(nico: Bool = false) {
+        if nico {
+            self.labelText = "\(self.nico.now)"
+        } else {
+            self.labelText = "\(self.timeProvider.now)"
+        }
     }
 }
 
 class ViewController: UIViewController {
 
     private func play(viewModel: TimeViewModel) {
-        print(viewModel.labelText)
-        viewModel.update()
-        print(viewModel.labelText)
+        
     }
 
     override func viewDidLoad() {

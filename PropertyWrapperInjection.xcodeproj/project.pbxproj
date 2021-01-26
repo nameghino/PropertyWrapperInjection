@@ -16,6 +16,7 @@
 		35CC958325BFA6C8005E6096 /* ComponentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35CC958225BFA6C8005E6096 /* ComponentContainer.swift */; };
 		35CC958825BFAC0F005E6096 /* Networking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35CC958725BFAC0F005E6096 /* Networking.swift */; };
 		35CC958C25BFACF5005E6096 /* TimeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35CC958B25BFACF5005E6096 /* TimeProvider.swift */; };
+		35CC958F25BFB0A4005E6096 /* Injected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35CC958E25BFB0A4005E6096 /* Injected.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		35CC958225BFA6C8005E6096 /* ComponentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentContainer.swift; sourceTree = "<group>"; };
 		35CC958725BFAC0F005E6096 /* Networking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Networking.swift; sourceTree = "<group>"; };
 		35CC958B25BFACF5005E6096 /* TimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeProvider.swift; sourceTree = "<group>"; };
+		35CC958E25BFB0A4005E6096 /* Injected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Injected.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				35CC958225BFA6C8005E6096 /* ComponentContainer.swift */,
+				35CC958E25BFB0A4005E6096 /* Injected.swift */,
 			);
 			path = ComponentInjection;
 			sourceTree = "<group>";
@@ -164,6 +167,7 @@
 			files = (
 				35CC957125BFA66F005E6096 /* ViewController.swift in Sources */,
 				35CC958825BFAC0F005E6096 /* Networking.swift in Sources */,
+				35CC958F25BFB0A4005E6096 /* Injected.swift in Sources */,
 				35CC958325BFA6C8005E6096 /* ComponentContainer.swift in Sources */,
 				35CC958C25BFACF5005E6096 /* TimeProvider.swift in Sources */,
 				35CC956D25BFA66F005E6096 /* AppDelegate.swift in Sources */,
