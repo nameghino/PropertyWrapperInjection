@@ -7,6 +7,75 @@
 
 import UIKit
 
+class TimeViewModel {
+    @Injected<TimeProviderProtocol>
+    private var timeProvider
+
+    @Injected<TimeProviderProtocol>(label: "my birthday")
+    private var nico
+
+    var labelText: String = "* not yet set *"
+
+    func update(nico: Bool = false) {
+        if nico {
+            self.labelText = "\(self.nico.now)"
+        } else {
+            self.labelText = "\(self.timeProvider.now)"
+        }
+    }
+}
+
+class LoginViewModel {
+    @Injected<AuthenticationProtocol>
+    var authenticator
+
+    var username: String
+    var password: String
+
+    init(username: String, password: String) {
+        self.username = username
+        self.password = password
+    }
+
+    func login(block: @escaping () -> Void) {
+        authenticator.authenticate(username: username,
+                                   password: password) { maybeSession in
+            guard let session = maybeSession else {
+                print("did not authenticate correctly")
+                return
+            }
+
+            let authenticatedContainer = ComponentContainer(from: .default, label: "authenticated")
+            authenticatedContainer.register(type: UserSession.self, factory: { _ in session })
+            block()
+        }
+    }
+}
+
+class MessagingViewModel {
+    @Injected<UserSession>(path: "authenticated")
+    var currentUser
+
+    @Injected<ComponentContainer>(label: "authenticated")
+    var authenticatedContainer
+
+    func play(block: @escaping() -> Void) {
+        print("currentUser: \(currentUser)")
+        let messagingSessionContainer = ComponentContainer(from: authenticatedContainer, label: "messaging-session")
+        messagingSessionContainer.register(type: String.self, label: "latest-message", scope: .transient) { _ in "hello world" }
+        block()
+    }
+}
+
+class MessageDetailViewModel {
+    @Injected<String>(label: "latest-message", path: "authenticated.messaging-session")
+    var latestMessage
+
+    func play() {
+        print(self.latestMessage)
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -20,14 +89,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         setupComponents()
 
-        let viewModel = TimeViewModel()
-        print(viewModel.labelText)
-        viewModel.update()
-        print(viewModel.labelText)
-        viewModel.update(nico: true)
-        print(viewModel.labelText)
-        viewModel.update()
-        print(viewModel.labelText)    }
+        let timeViewModel = TimeViewModel()
+        print(timeViewModel.labelText)
+        timeViewModel.update()
+        print(timeViewModel.labelText)
+        sleep(2)
+        timeViewModel.update(nico: true)
+        print(timeViewModel.labelText)
+        sleep(2)
+        timeViewModel.update()
+        print(timeViewModel.labelText)
+
+        let loginViewModel = LoginViewModel(username: "nico", password: "secret")
+        loginViewModel.login {
+            let messaging = MessagingViewModel()
+            messaging.play {
+                let detail = MessageDetailViewModel()
+                detail.play()
+            }
+        }
+    }
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
@@ -69,6 +150,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                                             timeZone: TimeZone(secondsFromGMT: -3 * 3600), year: 1986, month: 4, day: 23, hour: 9, minute: 50)
             let date = Calendar.autoupdatingCurrent.date(from: components)!
             return MockTimeProvider(with: date)
+        }
+
+        container.register(type: AuthenticationProtocol.self) { _ in
+            MockAuthenticator()
         }
     }
 

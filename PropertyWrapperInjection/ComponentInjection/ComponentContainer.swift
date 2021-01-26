@@ -33,16 +33,28 @@ public class ComponentContainer {
 
     typealias ComponentEntry = (block: (ComponentContainer) throws -> Any, scope: Scope)
 
+    private weak var parent: ComponentContainer? = nil
     private var container: [Key: ComponentEntry] = [:]
     private var applicationScope: [Key: Any] = [:]
-
-    // maybe implement stacking?
+    private var label: String?
 
     public enum Scope {
         case transient, application
     }
 
-    public func register<T>(type: T.Type, label: String? = nil, scope: Scope = .application, factory: @escaping (ComponentContainer) -> T) {
+    init(from maybeParent: ComponentContainer? = nil, label: String? = nil) {
+        self.parent = maybeParent
+        self.label = label
+
+        if let parent = maybeParent {
+            parent.register(type: ComponentContainer.self, label: label, scope: .transient, factory: { _ in self })
+        }
+    }
+
+    public func register<T>(type: T.Type,
+                            label: String? = nil,
+                            scope: Scope = .application,
+                            factory: @escaping (ComponentContainer) -> T) {
         let entry: ComponentEntry = (block: factory, scope: scope)
         let key = Key(type: type, label: label)
         container[key] = entry
@@ -50,8 +62,13 @@ public class ComponentContainer {
 
     public func resolve<T>(type: T.Type, label: String? = nil) throws -> T {
         let key = Key(type: type, label: label)
+
         guard let entry = self.container[key] else {
-            throw Error.unknownComponent(key)
+            if let parent = self.parent {
+                return try parent.resolve(type: type, label: label)
+            } else {
+                throw Error.unknownComponent(key)
+            }
         }
 
         let component: Any = try {
