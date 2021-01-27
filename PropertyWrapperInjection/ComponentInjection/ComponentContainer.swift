@@ -19,6 +19,8 @@ public class ComponentContainer {
     }
 
     public static func set(root: ComponentContainer, forceDelete: Bool = false) {
+        precondition(root.parent == nil)
+
         guard self.stack.isEmpty || forceDelete == true else {
             fatalError("cannot set root, child components are configured. set forceDelete if you really need this")
         }
@@ -28,6 +30,10 @@ public class ComponentContainer {
 
     public static func push(container: ComponentContainer) {
         precondition(!stack.isEmpty)
+
+        let parent = ComponentContainer.current
+        container.parent = parent
+
         stack.append(container)
     }
 
@@ -66,6 +72,7 @@ public class ComponentContainer {
 
     typealias ComponentEntry = (block: (ComponentContainer) throws -> Any, scope: Scope)
 
+    private weak var parent: ComponentContainer?
     private var container: [Key: ComponentEntry] = [:]
     private var applicationScope: [Key: Any] = [:]
 
@@ -83,7 +90,17 @@ public class ComponentContainer {
 
     public func resolve<T>(type: T.Type, label: String? = nil) throws -> T {
         let key = Key(type: type, label: label)
-        guard let entry = self.container[key] else {
+
+
+        if
+            !self.container.keys.contains(key),
+            let parent = self.parent {
+            return try parent.resolve(type: type, label: label)
+        }
+
+        guard
+            let entry = self.container[key]
+        else {
             throw Error.unknownComponent(key)
         }
 
