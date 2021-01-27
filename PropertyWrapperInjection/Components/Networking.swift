@@ -21,13 +21,23 @@ extension URLSession: NetworkingProtocol {
 }
 
 class MockNetworking: NetworkingProtocol {
-    private let data: Data?
+    private var responseDictionary: [String: Data] = [:]
 
-    init(response: Data?) {
-        self.data = response
+    func register(data: Data, for path: String) {
+        self.responseDictionary[path] = data
+    }
+
+    func register<Response: Codable>(value: Response, for path: String) {
+        let data = try! JSONEncoder().encode(value)
+        self.register(data: data, for: path)
     }
 
     func submit(request: URLRequest, callback: @escaping (Data?) -> Void) {
-        callback(self.data)
+        guard let path = request.url?.path else {
+            callback(nil)
+            return
+        }
+
+        callback(self.responseDictionary[path])
     }
 }
