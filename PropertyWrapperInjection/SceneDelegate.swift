@@ -8,11 +8,9 @@
 import UIKit
 
 class TimeViewModel {
-    @Injected<TimeProviderProtocol>
-    var timeProvider
+    @Injected var timeProvider: TimeProviderProtocol
 
-    @Injected<TimeProviderProtocol>(label: "my birthday")
-    var nico
+    @Injected(label: "my birthday") var nico: TimeProviderProtocol
 
     var labelText: String = "* not yet set *"
 
@@ -22,6 +20,33 @@ class TimeViewModel {
         } else {
             self.labelText = "\(self.timeProvider.now)"
         }
+    }
+}
+
+class UsernamePasswordLoginViewModel {
+    @Injected var authenticator: AuthenticatorProtocol
+
+    var username: String!
+    var password: String!
+
+    func login(callback: @escaping () -> Void) {
+        let credentials = UserCredentials(username: username, password: password)
+        authenticator.authenticate(with: credentials) { session in
+            guard let session = session else { callback(); return }
+            let container = ComponentContainer()
+            container.register(type: UserSession.self) { _ in session}
+
+            ComponentContainer.push(container: container)
+            callback()
+        }
+    }
+}
+
+class MessagesViewModel {
+    @Injected var userSession: UserSession
+
+    func play() {
+        print(userSession)
     }
 }
 
@@ -46,6 +71,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         print(viewModel.labelText)
         viewModel.update()
         print(viewModel.labelText)
+
+        let login = UsernamePasswordLoginViewModel()
+        login.username = "nameghino"
+        login.password = "secret"
+
+        login.login {
+            let messages = MessagesViewModel()
+            messages.play()
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -79,7 +113,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func setupComponents() {
         let container = ComponentContainer()
         container.register(type: NetworkingProtocol.self) { _ in
-            return URLSession.shared
+            let mock = MockNetworking()
+            mock.register(value: UserSession(username: "nameghino", validUntil: Date().addingTimeInterval(7 * 86400)),
+                          for: "/v1/login")
+            return mock
         }
 
         container.register(type: TimeProviderProtocol.self) { _ in Realtime() }
@@ -89,6 +126,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let date = Calendar.autoupdatingCurrent.date(from: components)!
             return MockTimeProvider(with: date)
         }
+
+        container.register(type: AuthenticatorProtocol.self, scope: .transient) { _ in Authenticator() }
 
         ComponentContainer.set(root: container)
     }
